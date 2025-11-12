@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Categoria {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  gastos      Gasto[]
+}
+
+model TipoHongo {
+  id          String   @id @default(cuid())
+  nombre      String   @unique
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  ventas      Venta[]
+}
+
+model Venta {
+  id            String      @id @default(cuid())
+  monto         Float
+  fecha         DateTime    @default(now())
+  descripcion   String?
+  cliente       String?
+  cantidad      Int?
+  tipoHongoId   String
+  tipoHongo     TipoHongo   @relation(fields: [tipoHongoId], references: [id], onDelete: Cascade)
+  registradoPor String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Gasto {
+  id            String     @id @default(cuid())
+  monto         Float
+  fecha         DateTime   @default(now())
+  descripcion   String?
+  proveedor     String?
+  categoriaId   String
+  categoria     Categoria  @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  registradoPor String
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
