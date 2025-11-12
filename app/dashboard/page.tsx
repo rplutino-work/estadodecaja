@@ -20,18 +20,43 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await fetch('/api/dashboard')
+      
+      if (!res.ok) {
+        throw new Error('Error al obtener datos del dashboard')
+      }
+      
+      const data = await res.json()
+      setData(data)
+    } catch (err) {
+      console.error('Error fetching dashboard:', err)
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    fetch('/api/dashboard')
-      .then(res => res.json())
-      .then(data => {
-        setData(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setLoading(false)
-      })
+    fetchDashboard()
+    
+    // Refrescar cada vez que la página se vuelve visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchDashboard()
+      }
+    }
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   if (loading) {
@@ -40,6 +65,25 @@ export default function DashboardPage() {
         <Navbar />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">Cargando...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen gradient-mushroom">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-red-600 mb-4">{error}</div>
+          <div className="text-center">
+            <button
+              onClick={fetchDashboard}
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -67,9 +111,17 @@ export default function DashboardPage() {
     <div className="min-h-screen gradient-mushroom">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-          Dashboard
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <button
+            onClick={fetchDashboard}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm"
+          >
+            Actualizar
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="glass-effect rounded-2xl p-6 shadow-lg">

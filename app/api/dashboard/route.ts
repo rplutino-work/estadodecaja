@@ -16,6 +16,8 @@ export async function GET() {
       }),
     ])
 
+    console.log(`Dashboard: ${ventas.length} ventas, ${gastos.length} gastos`)
+
     const totalVentas = ventas.reduce((sum, v) => sum + v.monto, 0)
     const totalGastos = gastos.reduce((sum, g) => sum + g.monto, 0)
     const balance = totalVentas - totalGastos

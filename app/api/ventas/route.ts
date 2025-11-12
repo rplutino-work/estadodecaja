@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { monto, fecha, descripcion, cliente, cantidad, tipoHongoId, registradoPor } = body
 
+    console.log('Creando venta:', { monto, fecha, tipoHongoId, registradoPor })
+
     const venta = await prisma.venta.create({
       data: {
         monto: parseFloat(monto),
@@ -37,6 +39,8 @@ export async function POST(request: NextRequest) {
         tipoHongo: true,
       },
     })
+
+    console.log('Venta creada exitosamente:', venta.id)
 
     return NextResponse.json(venta, { status: 201 })
   } catch (error) {
