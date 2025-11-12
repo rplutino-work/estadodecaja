@@ -37,6 +37,11 @@ export default function DashboardPage() {
       setError(null)
       const res = await fetch('/api/dashboard', {
         cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
       })
       
       if (!res.ok) {
@@ -69,17 +74,24 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchDashboard()
     
-    // Refrescar cada vez que la página se vuelve visible
+    // Refrescar cada vez que la página se vuelve visible (cuando el usuario vuelve a la pestaña)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         fetchDashboard()
       }
     }
     
+    // Refrescar cuando se enfoca la ventana (útil para Safari)
+    const handleFocus = () => {
+      fetchDashboard()
+    }
+    
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
     }
   }, [])
 

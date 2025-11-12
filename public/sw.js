@@ -54,6 +54,22 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // NO cachear el dashboard API - siempre obtener la versión más reciente
+  if (event.request.url.includes('/api/dashboard')) {
+    event.respondWith(
+      fetch(event.request, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      }).catch(() => {
+        // Si falla, devolver error en lugar de cache
+        return new Response('Error de red', { status: 503 });
+      })
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
