@@ -83,6 +83,9 @@ export async function GET() {
       balance: number
       ventasCobradas: number
       gastosPagados: number
+      ajustesPagados: number
+      ajustesRecibidos: number
+      ajustesNetos: number
     }> = {}
 
     // Inicializar ambos socios
