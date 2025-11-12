@@ -142,7 +142,7 @@ export default function EditarVentaPage() {
               <input
                 type="number"
                 value={formData.cantidad || ''}
-                onChange={(e) => setFormData({ ...formData, cantidad: e.target.value ? parseInt(e.target.value) : null })}
+                onChange={(e) => setFormData({ ...formData, cantidad: e.target.value ? parseInt(e.target.value) : undefined })}
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
