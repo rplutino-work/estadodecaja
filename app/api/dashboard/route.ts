@@ -1,9 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    console.log('Dashboard API: Iniciando consulta...')
+    // Forzar no caché en la respuesta
+    const headers = new Headers()
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    headers.set('Pragma', 'no-cache')
+    headers.set('Expires', '0')
+    headers.set('X-Content-Type-Options', 'nosniff')
+    
+    console.log('Dashboard API: Iniciando consulta...', new Date().toISOString())
     
     const [ventas, gastos, ajustes] = await Promise.all([
       prisma.venta.findMany({
@@ -140,7 +147,7 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       totalVentas,
       totalGastos,
       balance,
@@ -155,6 +162,13 @@ export async function GET() {
       totalGastosCount: gastos.length,
       totalAjustesCount: ajustes.length,
     })
+    
+    // Agregar headers de no-caché
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
   } catch (error) {
     console.error('Error fetching dashboard:', error)
     return NextResponse.json({ error: 'Error al obtener datos del dashboard' }, { status: 500 })

@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { formatDateForInput } from '@/lib/dateUtils'
 
 interface TipoHongo {
   id: string
@@ -35,7 +36,7 @@ export default function EditarVentaPage() {
       fetch(`/api/ventas/${id}`).then(res => res.json()),
     ]).then(([tiposData, ventaData]) => {
       setTipos(tiposData)
-      const fecha = new Date(ventaData.fecha).toISOString().split('T')[0]
+      const fecha = formatDateForInput(ventaData.fecha)
       setFormData({ ...ventaData, fecha })
     }).catch(err => console.error(err))
   }, [id])

@@ -69,7 +69,11 @@ export async function GET() {
       })),
     ].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
 
-    return NextResponse.json(timeline)
+    const response = NextResponse.json(timeline)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    return response
   } catch (error) {
     console.error('Error fetching timeline:', error)
     return NextResponse.json({ error: 'Error al obtener línea de tiempo' }, { status: 500 })

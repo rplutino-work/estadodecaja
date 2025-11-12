@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { TrendingUp, TrendingDown, DollarSign, Users } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Users, Clock } from 'lucide-react'
 
 interface BalanceSocio {
   ventas: number
@@ -38,12 +39,16 @@ export default function DashboardPage() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch('/api/dashboard', {
+      // Agregar timestamp único para forzar request fresco siempre
+      const timestamp = new Date().getTime()
+      const res = await fetch(`/api/dashboard?t=${timestamp}`, {
+        method: 'GET',
         cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
           'Pragma': 'no-cache',
           'Expires': '0',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       })
       
@@ -75,7 +80,40 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
+    // Siempre refrescar al montar el componente
     fetchDashboard()
+    
+    // Refrescar cuando la página recibe foco (útil cuando vuelves de otra página)
+    const handleFocus = () => {
+      console.log('Dashboard: Página recibió foco, refrescando...')
+      fetchDashboard()
+    }
+    
+    // Refrescar cuando la página se vuelve visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('Dashboard: Página visible, refrescando...')
+        fetchDashboard()
+      }
+    }
+    
+    // Refrescar cuando se hace popstate (navegación del navegador)
+    const handlePopState = () => {
+      console.log('Dashboard: PopState, refrescando...')
+      fetchDashboard()
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('pageshow', handleFocus) // Para Safari
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('popstate', handlePopState)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('pageshow', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('popstate', handlePopState)
+    }
   }, [])
 
   if (loading) {
@@ -134,12 +172,21 @@ export default function DashboardPage() {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
             Dashboard
           </h1>
-          <button
-            onClick={fetchDashboard}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm"
-          >
-            Actualizar
-          </button>
+          <div className="flex gap-3">
+            <Link
+              href="/timeline"
+              className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors text-sm"
+            >
+              <Clock className="w-4 h-4" />
+              Línea de Tiempo
+            </Link>
+            <button
+              onClick={fetchDashboard}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm"
+            >
+              Actualizar
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -254,32 +301,60 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="glass-effect rounded-2xl p-6 shadow-lg">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Ventas por Tipo de Hongo</h3>
-            <div className="space-y-3">
-              {Object.entries(data.ventasPorTipo).map(([tipo, monto]) => (
-                <div key={tipo} className="flex justify-between items-center">
-                  <span className="text-gray-700">{tipo}</span>
-                  <span className="font-semibold text-green-600">{formatCurrency(monto)}</span>
+            {Object.keys(data.ventasPorTipo).length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No hay ventas registradas</p>
+            ) : (
+              <>
+                <div className="space-y-3 mb-4">
+                  {Object.entries(data.ventasPorTipo).map(([tipo, monto]) => {
+                    const porcentaje = (monto / data.totalVentas) * 100
+                    return (
+                      <div key={tipo}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-gray-700">{tipo}</span>
+                          <span className="font-semibold text-green-600">{formatCurrency(monto)}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full transition-all"
+                            style={{ width: `${porcentaje}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              ))}
-              {Object.keys(data.ventasPorTipo).length === 0 && (
-                <p className="text-gray-500 text-center py-4">No hay ventas registradas</p>
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           <div className="glass-effect rounded-2xl p-6 shadow-lg">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Gastos por Categoría</h3>
-            <div className="space-y-3">
-              {Object.entries(data.gastosPorCategoria).map(([categoria, monto]) => (
-                <div key={categoria} className="flex justify-between items-center">
-                  <span className="text-gray-700">{categoria}</span>
-                  <span className="font-semibold text-red-600">{formatCurrency(monto)}</span>
+            {Object.keys(data.gastosPorCategoria).length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No hay gastos registrados</p>
+            ) : (
+              <>
+                <div className="space-y-3 mb-4">
+                  {Object.entries(data.gastosPorCategoria).map(([categoria, monto]) => {
+                    const porcentaje = (monto / data.totalGastos) * 100
+                    return (
+                      <div key={categoria}>
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-gray-700">{categoria}</span>
+                          <span className="font-semibold text-red-600">{formatCurrency(monto)}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-red-500 h-2 rounded-full transition-all"
+                            style={{ width: `${porcentaje}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              ))}
-              {Object.keys(data.gastosPorCategoria).length === 0 && (
-                <p className="text-gray-500 text-center py-4">No hay gastos registrados</p>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
 

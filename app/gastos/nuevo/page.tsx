@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { formatDateForInput, getBuenosAiresDate } from '@/lib/dateUtils'
 
 interface Categoria {
   id: string
@@ -16,7 +17,7 @@ export default function NuevoGastoPage() {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     monto: '',
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: formatDateForInput(getBuenosAiresDate()),
     descripcion: '',
     proveedor: '',
     categoriaId: '',

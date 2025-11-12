@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { formatDateForInput } from '@/lib/dateUtils'
 
 interface Ajuste {
   id: string
@@ -25,7 +26,7 @@ export default function EditarAjustePage() {
     fetch(`/api/ajustes/${id}`)
       .then(res => res.json())
       .then(data => {
-        const fecha = new Date(data.fecha).toISOString().split('T')[0]
+        const fecha = formatDateForInput(data.fecha)
         setFormData({ ...data, fecha })
       })
       .catch(err => console.error(err))

@@ -3,13 +3,14 @@
 import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { formatDateForInput, getBuenosAiresDate } from '@/lib/dateUtils'
 
 export default function NuevoAjustePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     monto: '',
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: formatDateForInput(getBuenosAiresDate()),
     descripcion: '',
     quienPaga: '',
     quienRecibe: '',

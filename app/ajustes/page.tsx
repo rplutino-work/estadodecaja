@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { Plus, Edit, Trash2, ArrowRightLeft } from 'lucide-react'
-import { format } from 'date-fns'
+import { formatDateOnly } from '@/lib/dateUtils'
 
 interface Ajuste {
   id: string
@@ -126,7 +126,7 @@ export default function AjustesPage() {
                   {ajustes.map((ajuste) => (
                     <tr key={ajuste.id} className="border-b border-gray-200 hover:bg-white/50">
                       <td className="py-3 px-4 text-gray-700">
-                        {format(new Date(ajuste.fecha), 'dd/MM/yyyy')}
+                        {formatDateOnly(ajuste.fecha)}
                       </td>
                       <td className="py-3 px-4 text-gray-700 font-semibold text-red-600">
                         {getNombreSocio(ajuste.quienPaga)}

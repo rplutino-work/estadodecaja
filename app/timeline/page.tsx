@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import { TrendingUp, TrendingDown, ArrowRightLeft, Calendar } from 'lucide-react'
-import { format } from 'date-fns'
+import { formatDateForDisplay } from '@/lib/dateUtils'
 
 interface TimelineItem {
   id: string
@@ -21,14 +21,40 @@ export default function TimelinePage() {
 
   useEffect(() => {
     fetchTimeline()
+    
+    // Refrescar cuando la página recibe foco
+    const handleFocus = () => {
+      fetchTimeline()
+    }
+    
+    // Refrescar cuando la página se vuelve visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchTimeline()
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('pageshow', handleFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('pageshow', handleFocus)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const fetchTimeline = async () => {
     try {
-      const res = await fetch('/api/timeline', {
+      const timestamp = new Date().getTime()
+      const res = await fetch(`/api/timeline?t=${timestamp}`, {
+        method: 'GET',
         cache: 'no-store',
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         },
       })
       const data = await res.json()
@@ -123,7 +149,7 @@ export default function TimelinePage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold text-gray-800 capitalize">{item.tipo}</span>
                           <span className="text-sm text-gray-500">
-                            {format(new Date(item.fecha), 'dd/MM/yyyy HH:mm')}
+                            {formatDateForDisplay(item.fecha)}
                           </span>
                         </div>
                         <p className="text-gray-700 mb-2">{item.descripcion}</p>

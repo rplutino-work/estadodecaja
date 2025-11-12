@@ -11,7 +11,9 @@ export async function GET() {
         fecha: 'desc',
       },
     })
-    return NextResponse.json(gastos)
+    const response = NextResponse.json(gastos)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    return response
   } catch (error) {
     console.error('Error fetching gastos:', error)
     return NextResponse.json({ error: 'Error al obtener gastos' }, { status: 500 })

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { Plus, Edit, Trash2 } from 'lucide-react'
-import { format } from 'date-fns'
+import { formatDateOnly } from '@/lib/dateUtils'
 
 interface Gasto {
   id: string
@@ -124,7 +124,7 @@ export default function GastosPage() {
                   {gastos.map((gasto) => (
                     <tr key={gasto.id} className="border-b border-gray-200 hover:bg-white/50">
                       <td className="py-3 px-4 text-gray-700">
-                        {format(new Date(gasto.fecha), 'dd/MM/yyyy')}
+                        {formatDateOnly(gasto.fecha)}
                       </td>
                       <td className="py-3 px-4 text-gray-700">{gasto.categoria.nombre}</td>
                       <td className="py-3 px-4 text-gray-700">{gasto.proveedor || '-'}</td>

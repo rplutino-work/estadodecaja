@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { formatDateForInput } from '@/lib/dateUtils'
 
 interface Categoria {
   id: string
@@ -34,7 +35,7 @@ export default function EditarGastoPage() {
       fetch(`/api/gastos/${id}`).then(res => res.json()),
     ]).then(([categoriasData, gastoData]) => {
       setCategorias(categoriasData)
-      const fecha = new Date(gastoData.fecha).toISOString().split('T')[0]
+      const fecha = formatDateForInput(gastoData.fecha)
       setFormData({ ...gastoData, fecha })
     }).catch(err => console.error(err))
   }, [id])

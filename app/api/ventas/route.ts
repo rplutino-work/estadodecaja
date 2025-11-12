@@ -11,7 +11,9 @@ export async function GET() {
         fecha: 'desc',
       },
     })
-    return NextResponse.json(ventas)
+    const response = NextResponse.json(ventas)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+    return response
   } catch (error) {
     console.error('Error fetching ventas:', error)
     return NextResponse.json({ error: 'Error al obtener ventas' }, { status: 500 })
