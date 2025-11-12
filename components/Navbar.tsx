@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Home, TrendingUp, TrendingDown, BarChart3, Settings, ArrowRightLeft } from 'lucide-react'
+import { Home, TrendingUp, TrendingDown, BarChart3, Settings, ArrowRightLeft, Clock } from 'lucide-react'
 
 export default function Navbar() {
   return (
@@ -24,6 +24,9 @@ export default function Navbar() {
             </Link>
             <Link href="/ajustes" className="p-2 rounded-lg hover:bg-white/50 transition-colors">
               <ArrowRightLeft className="w-5 h-5" />
+            </Link>
+            <Link href="/timeline" className="p-2 rounded-lg hover:bg-white/50 transition-colors">
+              <Clock className="w-5 h-5" />
             </Link>
             <Link href="/configuracion" className="p-2 rounded-lg hover:bg-white/50 transition-colors">
               <Settings className="w-5 h-5" />

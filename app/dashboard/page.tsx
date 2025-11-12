@@ -10,6 +10,9 @@ interface BalanceSocio {
   balance: number
   ventasCobradas: number
   gastosPagados: number
+  ajustesPagados: number
+  ajustesRecibidos: number
+  ajustesNetos: number
 }
 
 interface DashboardData {
@@ -73,26 +76,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchDashboard()
-    
-    // Refrescar cada vez que la página se vuelve visible (cuando el usuario vuelve a la pestaña)
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchDashboard()
-      }
-    }
-    
-    // Refrescar cuando se enfoca la ventana (útil para Safari)
-    const handleFocus = () => {
-      fetchDashboard()
-    }
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('focus', handleFocus)
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('focus', handleFocus)
-    }
   }, [])
 
   if (loading) {
@@ -188,15 +171,6 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="glass-effect rounded-2xl p-6 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-700">Por Socio (50/50)</h3>
-              <Users className="w-8 h-8 text-purple-500" />
-            </div>
-            <p className={`text-3xl font-bold ${data.porSocio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatCurrency(data.porSocio)}
-            </p>
-          </div>
         </div>
 
         {/* Balance Individual por Socio */}
@@ -207,7 +181,10 @@ export default function DashboardPage() {
               gastos: 0, 
               balance: 0, 
               ventasCobradas: 0, 
-              gastosPagados: 0 
+              gastosPagados: 0,
+              ajustesPagados: 0,
+              ajustesRecibidos: 0,
+              ajustesNetos: 0
             }
             const nombreSocio = socio === 'rodri' ? 'Rodri' : 'Juanchi'
             const esPositivo = balanceData.balance >= 0
@@ -235,6 +212,23 @@ export default function DashboardPage() {
                   <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
                     <span className="text-gray-700 font-medium">Gastos pagados</span>
                     <span className="font-bold text-red-600">{formatCurrency(balanceData.gastosPagados)}</span>
+                  </div>
+
+                  <div className="p-3 bg-purple-50 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">Ajustes pagados</span>
+                      <span className="font-semibold text-red-600">-{formatCurrency(balanceData.ajustesPagados)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Ajustes recibidos</span>
+                      <span className="font-semibold text-green-600">+{formatCurrency(balanceData.ajustesRecibidos)}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-purple-200">
+                      <span className="text-sm font-semibold text-gray-700">Neto ajustes</span>
+                      <span className={`font-bold ${balanceData.ajustesNetos >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(balanceData.ajustesNetos)}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className={`flex justify-between items-center p-4 rounded-lg border-2 ${

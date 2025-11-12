@@ -122,12 +122,18 @@ export async function GET() {
       // Si es negativo: debe dinero (tiene más de lo que le corresponde)
       const balance = leCorresponde - tieneEnEfectivo
       
+      const ajustesPagados = ajustes.filter(a => a.quienPaga === socio).reduce((sum, a) => sum + a.monto, 0)
+      const ajustesRecibidos = ajustes.filter(a => a.quienRecibe === socio).reduce((sum, a) => sum + a.monto, 0)
+      
       balancePorSocio[socio] = {
         ventas: mitadVentas,
         gastos: mitadGastos,
         balance: balance,
         ventasCobradas: ventasCobradas,
         gastosPagados: gastosPagados,
+        ajustesPagados: ajustesPagados,
+        ajustesRecibidos: ajustesRecibidos,
+        ajustesNetos: ajustesNetos,
       }
     })
 
@@ -141,8 +147,10 @@ export async function GET() {
       ventasPorRegistrador,
       gastosPorRegistrador,
       balancePorSocio,
+      ajustesPorSocio,
       totalVentasCount: ventas.length,
       totalGastosCount: gastos.length,
+      totalAjustesCount: ajustes.length,
     })
   } catch (error) {
     console.error('Error fetching dashboard:', error)

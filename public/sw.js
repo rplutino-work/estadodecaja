@@ -1,43 +1,21 @@
-// Service Worker con actualización automática
-const CACHE_NAME = 'estado-caja-v2';
-const urlsToCache = [
-  '/',
-  '/dashboard',
-  '/ventas',
-  '/gastos',
-  '/ajustes',
-  '/configuracion',
-];
-
+// Service Worker SIN caché - siempre obtener la versión más reciente
 // Instalación: actualiza inmediatamente y toma control
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Instalando...');
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Service Worker: Cache abierto');
-        return cache.addAll(urlsToCache).catch(err => {
-          console.log('Service Worker: Error al cachear', err);
-        });
-      })
-      .then(() => {
-        // Fuerza la activación inmediata
-        return self.skipWaiting();
-      })
-  );
+  // Fuerza la activación inmediata sin cachear nada
+  event.waitUntil(self.skipWaiting());
 });
 
-// Activación: limpia caches antiguos y toma control
+// Activación: limpia todos los caches y toma control
 self.addEventListener('activate', (event) => {
   console.log('Service Worker: Activando...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
+      // Eliminar TODOS los caches
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Eliminando cache antiguo', cacheName);
-            return caches.delete(cacheName);
-          }
+          console.log('Service Worker: Eliminando cache', cacheName);
+          return caches.delete(cacheName);
         })
       );
     }).then(() => {
@@ -47,45 +25,20 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: estrategia network-first para siempre tener la versión más reciente
+// Fetch: NO cachear nada - siempre obtener de la red
 self.addEventListener('fetch', (event) => {
-  // Solo cachear requests GET
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  // NO cachear el dashboard API - siempre obtener la versión más reciente
-  if (event.request.url.includes('/api/dashboard')) {
-    event.respondWith(
-      fetch(event.request, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        },
-      }).catch(() => {
-        // Si falla, devolver error en lugar de cache
-        return new Response('Error de red', { status: 503 });
-      })
-    );
-    return;
-  }
-
+  // Para todas las requests, siempre ir a la red sin caché
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Si la respuesta es válida, clonarla y guardarla en cache
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Si falla la red, intentar desde cache
-        return caches.match(event.request);
-      })
+    fetch(event.request, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    }).catch(() => {
+      // Si falla la red, devolver error
+      return new Response('Error de red', { status: 503 });
+    })
   );
 });
 
