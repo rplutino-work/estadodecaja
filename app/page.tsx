@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { TrendingUp, TrendingDown, Settings, BarChart3 } from 'lucide-react'
+import { TrendingUp, TrendingDown, Settings, BarChart3, ArrowRightLeft } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -54,7 +54,7 @@ export default function Home() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link href="/ventas" className="group">
             <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-transform duration-300 shadow-lg">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">Ver Ventas</h3>
@@ -66,6 +66,16 @@ export default function Home() {
             <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-transform duration-300 shadow-lg">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">Ver Gastos</h3>
               <p className="text-gray-600">Historial completo de gastos</p>
+            </div>
+          </Link>
+
+          <Link href="/ajustes" className="group">
+            <div className="glass-effect rounded-2xl p-6 hover:scale-105 transition-transform duration-300 shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <ArrowRightLeft className="w-6 h-6 text-purple-600" />
+                <h3 className="text-2xl font-bold text-gray-800">Ajustes</h3>
+              </div>
+              <p className="text-gray-600">Transferencias y nivelaciones</p>
             </div>
           </Link>
         </div>

@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import { TrendingUp, TrendingDown, DollarSign, Users } from 'lucide-react'
 
+interface BalanceSocio {
+  ventas: number
+  gastos: number
+  balance: number
+  ventasCobradas: number
+  gastosPagados: number
+}
+
 interface DashboardData {
   totalVentas: number
   totalGastos: number
@@ -13,6 +21,7 @@ interface DashboardData {
   gastosPorCategoria: Record<string, number>
   ventasPorRegistrador: Record<string, number>
   gastosPorRegistrador: Record<string, number>
+  balancePorSocio: Record<string, BalanceSocio>
   totalVentasCount: number
   totalGastosCount: number
 }
@@ -26,13 +35,28 @@ export default function DashboardPage() {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch('/api/dashboard')
+      const res = await fetch('/api/dashboard', {
+        cache: 'no-store',
+      })
       
       if (!res.ok) {
-        throw new Error('Error al obtener datos del dashboard')
+        const errorText = await res.text()
+        console.error('Dashboard API error:', res.status, errorText)
+        throw new Error(`Error al obtener datos del dashboard (${res.status})`)
       }
       
       const data = await res.json()
+      console.log('Dashboard data received:', data)
+      
+      // Validar que tenga balancePorSocio
+      if (!data.balancePorSocio) {
+        console.warn('balancePorSocio missing, initializing...')
+        data.balancePorSocio = {
+          rodri: { ventas: 0, gastos: 0, balance: 0, ventasCobradas: 0, gastosPagados: 0 },
+          juanchi: { ventas: 0, gastos: 0, balance: 0, ventasCobradas: 0, gastosPagados: 0 }
+        }
+      }
+      
       setData(data)
     } catch (err) {
       console.error('Error fetching dashboard:', err)
@@ -161,6 +185,64 @@ export default function DashboardPage() {
               {formatCurrency(data.porSocio)}
             </p>
           </div>
+        </div>
+
+        {/* Balance Individual por Socio */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {['rodri', 'juanchi'].map((socio) => {
+            const balanceData = data.balancePorSocio[socio] || { 
+              ventas: 0, 
+              gastos: 0, 
+              balance: 0, 
+              ventasCobradas: 0, 
+              gastosPagados: 0 
+            }
+            const nombreSocio = socio === 'rodri' ? 'Rodri' : 'Juanchi'
+            const esPositivo = balanceData.balance >= 0
+            
+            return (
+              <div key={socio} className="glass-effect rounded-2xl p-6 shadow-lg">
+                <h3 className="text-2xl font-bold mb-4 text-gray-800">{nombreSocio}</h3>
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">Derecho (50% ventas)</span>
+                      <span className="font-semibold text-blue-600">{formatCurrency(balanceData.ventas)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Obligación (50% gastos)</span>
+                      <span className="font-semibold text-blue-600">{formatCurrency(balanceData.gastos)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                    <span className="text-gray-700 font-medium">Ventas cobradas</span>
+                    <span className="font-bold text-green-600">{formatCurrency(balanceData.ventasCobradas)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <span className="text-gray-700 font-medium">Gastos pagados</span>
+                    <span className="font-bold text-red-600">{formatCurrency(balanceData.gastosPagados)}</span>
+                  </div>
+                  
+                  <div className={`flex justify-between items-center p-4 rounded-lg border-2 ${
+                    esPositivo 
+                      ? 'bg-green-100 border-green-300' 
+                      : 'bg-red-100 border-red-300'
+                  }`}>
+                    <span className="text-lg font-semibold text-gray-800">
+                      {esPositivo ? 'A favor' : 'En contra'}
+                    </span>
+                    <span className={`text-2xl font-bold ${
+                      esPositivo ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {formatCurrency(Math.abs(balanceData.balance))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

@@ -55,3 +55,15 @@ model Gasto {
   updatedAt     DateTime   @updatedAt
 }
 
+model Ajuste {
+  id            String   @id @default(cuid())
+  monto         Float
+  fecha         DateTime @default(now())
+  descripcion   String?
+  quienPaga     String   // rodri o juanchi
+  quienRecibe   String   // rodri o juanchi
+  registradoPor String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
