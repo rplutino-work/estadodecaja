@@ -40,8 +40,10 @@ export default function DashboardPage() {
       setLoading(true)
       setError(null)
       // Agregar timestamp único para forzar request fresco siempre
+      // También agregar un hash aleatorio para evitar caché de Vercel
       const timestamp = new Date().getTime()
-      const res = await fetch(`/api/dashboard?t=${timestamp}`, {
+      const randomHash = Math.random().toString(36).substring(7)
+      const res = await fetch(`/api/dashboard?t=${timestamp}&_=${randomHash}`, {
         method: 'GET',
         cache: 'no-store',
         headers: {
@@ -49,6 +51,7 @@ export default function DashboardPage() {
           'Pragma': 'no-cache',
           'Expires': '0',
           'X-Requested-With': 'XMLHttpRequest',
+          'X-Vercel-Cache-Control': 'no-cache',
         },
       })
       

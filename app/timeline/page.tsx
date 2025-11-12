@@ -47,14 +47,17 @@ export default function TimelinePage() {
 
   const fetchTimeline = async () => {
     try {
+      // Agregar timestamp y hash aleatorio para evitar caché de Vercel
       const timestamp = new Date().getTime()
-      const res = await fetch(`/api/timeline?t=${timestamp}`, {
+      const randomHash = Math.random().toString(36).substring(7)
+      const res = await fetch(`/api/timeline?t=${timestamp}&_=${randomHash}`, {
         method: 'GET',
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
           'Pragma': 'no-cache',
           'Expires': '0',
+          'X-Vercel-Cache-Control': 'no-cache',
         },
       })
       const data = await res.json()

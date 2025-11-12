@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Forzar renderizado dinámico - no cachear en Vercel
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function GET(request: NextRequest) {
   try {
     // Forzar no caché en la respuesta
@@ -163,10 +167,11 @@ export async function GET(request: NextRequest) {
       totalAjustesCount: ajustes.length,
     })
     
-    // Agregar headers de no-caché
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    // Agregar headers de no-caché (incluyendo s-maxage=0 para Vercel)
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
+    response.headers.set('X-Vercel-Cache-Control', 'no-cache')
     
     return response
   } catch (error) {
